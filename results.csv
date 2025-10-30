@@ -1,0 +1,2 @@
+loss_rate,throughput_mbps,duration_seconds,packets_sent
+0.1,0.806152,6,688
