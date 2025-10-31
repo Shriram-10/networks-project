@@ -49,57 +49,6 @@ testfile:
 	@dd if=/dev/urandom of=testfile.bin bs=1M count=10 2>/dev/null
 	@echo "Created testfile.bin (10 MB)"
 
-# Quick test without garbler
-test: all testfile
-	@echo ""
-	@echo "=== Quick Test (No Packet Loss) ==="
-	@echo "Starting receiver on port 8080..."
-	@./receiver 8080 &
-	@RECV_PID=$$!; \
-	sleep 1; \
-	echo "Sending testfile.bin..."; \
-	./sender 127.0.0.1 8080 testfile.bin 1024 5000; \
-	sleep 2; \
-	kill $$RECV_PID 2>/dev/null || true; \
-	echo ""; \
-	if [ -f testfile.bin ]; then \
-		echo "Verifying transfer..."; \
-		if cmp -s testfile.bin testfile.bin; then \
-			echo "✓ Test PASSED - Files match!"; \
-		else \
-			echo "✗ Test FAILED - Files differ!"; \
-		fi; \
-	fi
-
-# Test with garbler (10% packet loss)
-test-garbler: all testfile
-	@echo ""
-	@echo "=== Test with Garbler (10% Packet Loss) ==="
-	@echo "Starting receiver on port 8080..."
-	@./receiver 8080 &
-	@RECV_PID=$$!; \
-	sleep 1; \
-	echo "Starting garbler on port 9000 (10% loss)..."; \
-	./garbler 9000 127.0.0.1 8080 0.10 > garbler.log 2>&1 &
-	@GARB_PID=$$!; \
-	sleep 1; \
-	echo "Sending testfile.bin through garbler..."; \
-	./sender 127.0.0.1 9000 testfile.bin 1024 5000; \
-	sleep 2; \
-	kill $$RECV_PID $$GARB_PID 2>/dev/null || true; \
-	echo ""; \
-	if [ -f testfile.bin ]; then \
-		echo "Verifying transfer..."; \
-		if cmp -s testfile.bin testfile.bin; then \
-			echo "✓ Test PASSED - Files match despite packet loss!"; \
-		else \
-			echo "✗ Test FAILED - Files differ!"; \
-		fi; \
-	fi; \
-	echo ""; \
-	echo "Garbler log:"; \
-	cat garbler.log
-
 # Clean build artifacts
 clean:
 	rm -f $(TARGETS)

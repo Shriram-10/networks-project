@@ -623,7 +623,7 @@ int transfer_file(SenderState *state) {
         /* Query for missing records and handle retransmissions */
         int blast_complete = 0;
         int attempts = 0;
-        const int max_attempts = 10;
+        const int max_attempts = 200;
         
         while (!blast_complete && attempts < max_attempts) {
             /* Send IS_BLAST_OVER query */
